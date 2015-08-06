@@ -91,6 +91,83 @@ close FOO;
       '15'
     ],
 
+		# set file back to original contents
+		[ "echo 'Hello, world!' > test/hello.txt ; cat test/hello.txt",
+			'Hello, world!'
+		],
+
+		# basic symlink creation
+		[ 'ln -s test/hello.txt testlink > /dev/null 2>&1; cat testlink',
+			'Hello, world!'
+		],
+		
+		#copy symlink
+		[
+			'cp testlink testlink2; rm testlink; cat testlink2',
+			'Hello, world!'
+		],
+
+		# rename symlink
+		[
+			'mv testlink2 testlink3; cat testlink3',
+			'Hello, world!'
+		],
+	
+		# basic remove symlinks
+		[
+			'rm -f test/testlink && ls test | grep testlink',
+			''
+		],
+		[
+			'rm -f test/testlink2 && ls test | grep testlink2',
+			''
+		],
+		[
+			'rm -f test/testlink3 && ls test | grep testlink3',
+			''
+		],
+
+		#for hard link and delete:
+		[
+			'echo foo >> foo.txt ; ln foo.txt gah.txt ; cat gah.txt',
+			'foo'
+		],
+		[
+			'echo blurb >> gah.txt ; cat foo.txt',
+			"foo blurb"
+		],
+		[
+			'rm foo.txt ; cat gah.txt',
+			"foo blurb"
+		],
+
+		#for symlink and delete:
+		[
+			'echo foobar >> hello.txt ; ln -s hello.txt thelink ; diff hello.txt thelink && echo Same contents',
+			'Same contents'
+		],
+		[
+			'echo "world" >> hello.txt ; diff hello.txt thelink && echo Same contents',
+			'Same contents'
+		],
+		[
+			'rm hello.txt ; cat thelink',
+			'cat: thelink: No such file or directory'
+		],
+		[
+			'rm thelink',
+			''
+		],
+
+		#for conditional symlink
+		[
+			'cd test ; echo "Not root" > notroot ; echo "Root" > root ; ln -s root?root:notroot amiroot ; cat amiroot',
+			'Root'
+		],
+		[
+			'cd test ; su user -c "cat amiroot"',
+			'Not root'
+		],
 );
 
 my($ntest) = 0;
